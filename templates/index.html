@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UPS Comparison Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .url-inputs {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .url-group {
+            margin-bottom: 15px;
+        }
+        
+        .url-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .error {
+            color: #d32f2f;
+            padding: 15px;
+            background-color: #ffebee;
+            border-left: 4px solid #d32f2f;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .comparison-table {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+        }
+        
+        th:first-child {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        td:first-child {
+            font-weight: 600;
+            color: #555;
+            background-color: #f8f9fa;
+        }
+        
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 UPS Comparison Tool</h1>
+        <p class="subtitle">Compare up to 6 UPS products side-by-side</p>
+        
+        <form method="POST">
+            <div class="url-inputs">
+                {% for i in range(1, 7) %}
+                <div class="url-group">
+                    <label for="url{{ i }}">Product {{ i }} URL:</label>
+                    <input type="text" 
+                           id="url{{ i }}" 
+                           name="url{{ i }}" 
+                           placeholder="https://example.com/product-{{ i }}"
+                           value="{{ urls[i-1] if urls and i <= urls|length else '' }}">
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit">🔍 Generate Comparison Table</button>
+        </form>
+        
+        {% if errors %}
+            {% for error in errors %}
+                <div class="error">❌ {{ error }}</div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if results %}
+            <div class="success-message">
+                ✅ Successfully extracted data from {{ results|length }} product(s)!
+            </div>
+            
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Specification</th>
+                            {% for result in results %}
+                                <th>{{ result.product_num }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Product ID</td>
+                            {% for result in results %}
+                                <td><strong>{{ result.product_id }}</strong></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Maximum Power (W)</td>
+                            {% for result in results %}
+                                <td>{{ result.power_w }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Maximum Power (VA)</td>
+                            {% for result in results %}
+                                <td>{{ result.power_va }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>UPS Type</td>
+                            {% for result in results %}
+                                <td>{{ result.ups_type }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Wave Type</td>
+                            {% for result in results %}
+                                <td>{{ result.wave_type }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Output Connection</td>
+                            {% for result in results %}
+                                <td>{{ result.output_connection }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Colour</td>
+                            {% for result in results %}
+                                <td>{{ result.colour }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Height</td>
+                            {% for result in results %}
+                                <td>{{ result.height }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Width</td>
+                            {% for result in results %}
+                                <td>{{ result.width }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Depth</td>
+                            {% for result in results %}
+                                <td>{{ result.depth }}</td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
